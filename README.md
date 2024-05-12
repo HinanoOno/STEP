@@ -1,1 +1,1 @@
-# STEP Program Homeword
+# STEP Program Homework
