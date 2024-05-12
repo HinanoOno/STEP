@@ -46,8 +46,7 @@ def main(random_word):
   if(not anagram):
     print("No anagram found")
   else:
-    for word in anagram:
-      print(word[1])
+    return [word[1] for word in anagram]
   
 
 if __name__ == '__main__':
