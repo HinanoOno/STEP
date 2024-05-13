@@ -46,34 +46,7 @@ def find_anagrams(dictionary: List, input_word: str) -> List[str]:
 
 
 def calculate_point(word: str) -> int:
-    SCORES = [
-        1,
-        3,
-        2,
-        2,
-        1,
-        3,
-        3,
-        1,
-        1,
-        4,
-        4,
-        2,
-        2,
-        1,
-        1,
-        3,
-        4,
-        1,
-        1,
-        1,
-        2,
-        3,
-        3,
-        4,
-        3,
-        4,
-    ]
+    SCORES = [1, 3, 2, 2, 1, 3, 3, 1, 1, 4, 4, 2, 2, 1, 1, 3, 4, 1, 1, 1, 2, 3, 3, 4, 3, 4]
     score = 0
     for character in word:
         score += SCORES[ord(character) - ord("a")]
