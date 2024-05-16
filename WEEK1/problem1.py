@@ -1,17 +1,22 @@
 import sys
-from typing import List
-from typing import Union
+from collections import defaultdict
+from typing import Union,Dict,List
 
 WORDS_FILE_PATH = "words.txt"
-
 
 def load_data(file_path: str) -> List[str]:
     with open(file_path, "r") as file:
         data = file.read().split()
     return data
 
-
-def make_dictionary(data: List[str]) -> List[List[str]]:
+def find_anagrams(data: List[str],input_word)->List:
+    dictionary = defaultdict(list)
+    for word in data:
+        key = "".join(sorted(word))
+        dictionary[key].append(word)
+    return dictionary[input_word]
+    
+def make_dictionary_list(data: List[str]) -> List[List[str]]:
     dictionary = []
     for word in data:
         dictionary.append(["".join(sorted(word)), word])
@@ -49,10 +54,15 @@ def anagrams_binary_search(
 
 def main(input_word: str) -> Union[List[str], None]:
     words_data = load_data(WORDS_FILE_PATH)
-    dictionary = make_dictionary(words_data)
+    dictionary = make_dictionary_list(words_data)
 
     sorted_input_word = "".join(sorted(input_word))
     anagrams = anagrams_binary_search(dictionary, sorted_input_word)
+    
+    #dict型versionの時
+    # anagrams=find_anagrams(words_data,sorted_input_word)
+    # for word in anagrams:
+    #         print(word)
 
     if not anagrams:
         print("No anagram found")
