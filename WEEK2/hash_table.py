@@ -15,6 +15,7 @@ from typing import Union
 # |key|: string
 # Return value: a hash value
 
+DEFAUTL_BUCKET_SIZE = 97
 
 # Calculate Hash by chracter and index of the key
 def calculate_hash(key: str) -> int:
@@ -22,8 +23,25 @@ def calculate_hash(key: str) -> int:
 
     hash = 0
     for i in range(1, len(key) + 1):
-        hash += i ** (i + 1) * ord(key[i - 1])
+        hash += (i + 1) ** (i + 2) * ord(key[i - 1])
     return hash
+
+
+# Check if the given number is prime.
+def is_prime(num: int) -> bool:
+    if num < 2:
+        return False
+    for i in range(2, int(num**0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
+
+
+def find_prime_number(num: int) -> Union[int, None]:
+    for i in range(num, 0, -1):
+        if is_prime(i):
+            return i
+    return None
 
 
 # An item object that represents one key - value pair in the hash table.
@@ -52,7 +70,7 @@ class HashTable:
     def __init__(self):
         # Set the initial bucket size to 97. A prime number is chosen to reduce
         # hash conflicts.
-        self.bucket_size = 97
+        self.bucket_size = DEFAUTL_BUCKET_SIZE
         self.buckets = [None] * self.bucket_size
         self.item_count = 0
 
@@ -142,59 +160,34 @@ class HashTable:
     # Note: Don't change this function.
     def check_size(self):
         assert self.bucket_size < 100 or self.item_count >= self.bucket_size * 0.3
-
-    # Check if the given number is prime.
-    @classmethod
-    def is_prime(cls, num: int) -> bool:
-        if num < 2:
-            return False
-        for i in range(2, int(num**0.5) + 1):
-            if num % i == 0:
-                return False
-        return True
-
-    @classmethod
-    def find_prime_number(cls, num: int) -> Union[int, None]:
-        for i in range(num, 0, -1):
-            if cls.is_prime(i):
-                return i
-        return None
-
+    
     # Rehash the hash table
+    def rehash(self, new_size: int):
+        old_buckets = self.buckets
+        self.bucket_size = new_size
+        self.buckets = [None] * self.bucket_size
+
+        for item in old_buckets:
+            while item:
+                self.item_count -= 1
+                self.put(item.key, item.value)
+                item = item.next
+
+        
     # when the number of items in the hash table is more than 70% of the bucket size
     def expand_table(self):
         if self.item_count >= self.bucket_size * 0.7:
-            new_size = self.find_prime_number(self.bucket_size * 2)
-            old_buckets = self.buckets
-            self.bucket_size = new_size
-            self.buckets = [None] * self.bucket_size
-
-            for item in old_buckets:
-                while item:
-                    self.item_count -= 1
-                    self.put(item.key, item.value)
-                    item = item.next
-                 
+            new_size = find_prime_number(self.bucket_size * 2)
+            self.rehash(new_size)
             
-    # Rehash the hash table
+            
     # when the number of items in the hash table is less than 30% of the bucket size
     def shrink_table(self):
         if self.item_count <= self.bucket_size * 0.3:
-            new_size = max(97, self.find_prime_number(int(self.bucket_size // 2)))
-            old_buckets = self.buckets
-            self.bucket_size = new_size
-
-            self.buckets = [None] * self.bucket_size
-
-            for item in old_buckets:
-                while item:
-                    self.item_count -= 1
-                    self.put(item.key, item.value)
-                    item = item.next
-                    
-           
-
-
+            new_size = max(DEFAUTL_BUCKET_SIZE, find_prime_number(int(self.bucket_size // 2)))
+            self.rehash(new_size)
+            
+            
 # Test the functional behavior of the hash table.
 def functional_test():
     hash_table = HashTable()
@@ -298,4 +291,3 @@ def performance_test():
 if __name__ == "__main__":
     functional_test()
     performance_test()
-   

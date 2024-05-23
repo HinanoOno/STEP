@@ -40,9 +40,7 @@ class LinkedList:
         if self.tail.pre == None:
             self.tail = None
         else:
-            self.tail.pre.next = None
-            self.tail = self.tail.pre
-        self.length -= 1
+            self.remove(self.tail)
         
 
     # Remove a node from the linked list
@@ -51,7 +49,9 @@ class LinkedList:
             self.head = node.next
             self.length -= 1
         elif self.tail == node:
-            self.remove_tail()
+            self.tail = node.pre
+            node.pre.next = None
+            self.length -= 1
         else:
             node.pre.next = node.next
             node.next.pre = node.pre
@@ -59,21 +59,8 @@ class LinkedList:
 
     # Move a node to the head of the linked list
     def move_to_head(self, node: Node):
-        if self.head == node:
-            return
-        elif self.tail == node:
-            self.tail = node.pre
-            node.pre.next = None
-            node.next = self.head
-            self.head.pre = node
-            self.head = node
-        else:
-            node.pre.next = node.next
-            node.next.pre = node.pre
-            self.head.pre = node
-            node.next = self.head
-            self.head = node
-
+        self.remove(node)
+        self.insert(node)
 
 class Cache:
     # Initialize the cache.
