@@ -102,7 +102,7 @@ class HashTable:
     #               otherwise.
     def delete(self, key: str) -> bool:
         assert type(key) == str
-        self.reduce_table()
+        self.shrink_table()
         self.check_size()
         bucket_index = calculate_hash(key) % self.bucket_size
         item = self.buckets[bucket_index]
@@ -160,7 +160,7 @@ class HashTable:
                 return i
         return None
 
-    # Rehash the hash table.
+    # Rehash the hash table
     # when the number of items in the hash table is more than 70% of the bucket size
     def expand_table(self):
         if self.item_count >= self.bucket_size * 0.7:
@@ -176,9 +176,9 @@ class HashTable:
                     item = item.next
                  
             
-
+    # Rehash the hash table
     # when the number of items in the hash table is less than 30% of the bucket size
-    def reduce_table(self):
+    def shrink_table(self):
         if self.item_count <= self.bucket_size * 0.3:
             new_size = max(97, self.find_prime_number(int(self.bucket_size // 2)))
             old_buckets = self.buckets
