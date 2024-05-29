@@ -212,6 +212,7 @@ def run_test():
     test(" 3 + 4 * 2 ")
     # big_number
     test("1000324459687978*34285748-2348574/234")
+    test("2449589890/5342-2348574/234+423*313214")
     # invalid syntax
     test("3+*2")
     # only one number
@@ -219,8 +220,13 @@ def run_test():
     # invalid word
     # test("hello")
     # bracekts
+    test("3+(12*3)")
+    test("(5-2+(3-2)*(3+2))*2")
     test("3+(4*3-((3+2)*2))")
     # word
+    test("abs(3)")
+    test("int(3.5)+abs(-3)")
+    test("round(3.5)+int(3.5*3-2)")
     test("12 + abs(int(round(-1.55) + abs(int(-2.3 + 4))))")
 
     print("==== Test finished! ====\n")
