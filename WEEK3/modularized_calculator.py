@@ -1,3 +1,5 @@
+import time
+
 #! /usr/bin/python3
 WORD_LIST = ["abs", "round", "int"]
 
@@ -56,8 +58,7 @@ def read_word(line, index):
     if word in WORD_LIST:
         token = {"type": "WORD", "word": word}
     else:
-        print("Invalid word found: " + word)
-        exit(1)
+        raise ValueError("Invalid word found: " + word)
     return token, index
 
 
@@ -87,8 +88,7 @@ def tokenize(line):
             index += 1
             continue
         else:
-            print("Invalid character found: " + line[index])
-            exit(1)
+            raise ValueError("Invalid character found: " + line[index])
         tokens.append(token)
     return tokens
 
@@ -105,8 +105,7 @@ def evaluate_plus_and_minus(tokens):
             elif tokens[index - 1]["type"] == "MINUS":
                 answer -= tokens[index]["number"]
             else:
-                print("Invalid syntax")
-                exit(1)
+                raise ValueError("Invalid syntax")
         index += 1
     return answer
 
@@ -117,13 +116,16 @@ def evaluate_multiply_and_divided(tokens):
     while index < len(tokens):
         if tokens[index]["type"] == "NUMBER":
             if tokens[index - 1]["type"] == "MULTIPLY":
+                if tokens[index-2]['type'] != "NUMBER":
+                    raise ValueError("Invalid syntax")
                 tokens[index]["number"] *= tokens[index - 2]["number"]
                 del tokens[index - 2 : index]
                 index -= 2
             elif tokens[index - 1]["type"] == "DIVIDED":
+                if tokens[index-2]['type'] != "NUMBER":
+                    raise ValueError("Invalid syntax")
                 if tokens[index]["number"] == 0:
-                    print("Division by zero is not allowed")
-                    exit(1)
+                    raise ZeroDivisionError("Division by zero")
                 tokens[index]["number"] = (
                     tokens[index - 2]["number"] / tokens[index]["number"]
                 )
@@ -142,7 +144,7 @@ def evaluate_brackets(tokens):
             stack.append(index)
         elif tokens[index]["type"] == "END_BRACKET":
             start = stack.pop()
-            answer = evaluate(tokens[start + 1 : index], 1)
+            answer = evaluate_part(tokens[start + 1 : index])
             tokens[start] = {"type": "NUMBER", "number": answer}
             del tokens[start + 1 : index + 1]
             index = start
@@ -150,52 +152,57 @@ def evaluate_brackets(tokens):
     return tokens
 
 
+# caluculate the value of abs, round, int functions
+def calculate_function(function_name,number):
+    if function_name == "abs":
+        return abs(number)
+    elif function_name == "round":
+        return round(number)
+    elif function_name == "int":
+        return int(number)
+
 # evaluate abs, round, int functions
 def evaluate_word(tokens):
     index = 0
     while index < len(tokens):
         if tokens[index]["type"] == "WORD":
-            if tokens[index]["word"] == "abs":
-                tokens[index + 1]["number"] = abs(tokens[index + 1]["number"])
-                del tokens[index]
-            elif tokens[index]["word"] == "round":
-                tokens[index + 1]["number"] = round(tokens[index + 1]["number"])
-                del tokens[index]
-            elif tokens[index]["word"] == "int":
-                tokens[index + 1]["number"] = int(tokens[index + 1]["number"])
-                del tokens[index]
+            tokens[index+1]['number'] = calculate_function(tokens[index]["word"],tokens[index+1]['number'])
+            del tokens[index]
         index += 1
     return tokens
 
-
-def evaluate(tokens, flag=0):
-    tokens.insert(0, {"type": "PLUS"})
-    if flag == 0:
-        tokens = evaluate_brackets(tokens)
+# evaluate a part of tokens
+def evaluate_part(tokens):
     tokens = evaluate_word(tokens)
     tokens = evaluate_multiply_and_divided(tokens)
     answer = evaluate_plus_and_minus(tokens)
+    return answer
+    
+
+def evaluate(tokens):
+    #tokens.insert(0, {"type": "PLUS"})
+    tokens = evaluate_brackets(tokens)
+    answer = evaluate_part(tokens)
     return answer
 
 
 # Todo : Add test for error handling
 def test(line):
-    tokens = tokenize(line)
     try:
+        tokens = tokenize(line)
         actualAnswer = evaluate(tokens)
-    except ZeroDivisionError:
-        print("Division by zero is not allowed")
-        return
-    except:
-        print("Invalid syntax")
-        return
-    expectedAnswer = eval(line)
-    if abs(actualAnswer - expectedAnswer) < 1e-8:
-        print("PASS! (%s = %f)" % (line, expectedAnswer))
-    else:
-        print(
-            "FAIL! (%s should be %f but was %f)" % (line, expectedAnswer, actualAnswer)
-        )
+        expectedAnswer = eval(line)
+        if abs(actualAnswer - expectedAnswer) < 1e-8:
+            print("PASS! (%s = %f)" % (line, expectedAnswer))
+        else:
+            print(
+                "FAIL! (%s should be %f but was %f)" % (line, expectedAnswer, actualAnswer)
+            )
+    except ZeroDivisionError as e:
+        print("ZeroDivisionError: %s" % e)
+    except ValueError as e:
+        print("ValueError: %s" % e)
+  
 
 
 def run_test():
@@ -218,7 +225,7 @@ def run_test():
     # only one number
     test("3")
     # invalid word
-    # test("hello")
+    test("hello")
     # bracekts
     test("3+(12*3)")
     test("(5-2+(3-2)*(3+2))*2")
@@ -240,3 +247,20 @@ run_test()
 #     tokens = tokenize(line)
 #     answer = evaluate(tokens)
 #     print("answer = %f\n" % answer)
+
+
+# check the calculation time
+start_time = time.time()
+try:
+    line = "3+*2"
+    tokens = tokenize(line)
+    answer = evaluate(tokens)
+    print("answer = %f" % answer)
+
+except ZeroDivisionError as e:
+    print("ZeroDivisionError: %s" % e)
+except ValueError as e:
+    print("ValueError: %s" % e)
+
+end_time = time.time()
+print("Calculation time: %f seconds" % (end_time - start_time))
