@@ -43,12 +43,13 @@ class Wikipedia:
         print()
 
     # check if the previous word and the next word are shiritori
+    # ex) check_shiritori("apple", "elephant") -> True
     def check_shiritori(self, title1, title2):
         return title1[-1] == title2[0]
     
     
-    def dfs_shiritori(self, node, path, visited,parents):
-        path.append(node)
+    def dfs_shiritori(self, node, visited,parents):
+        path = [node]
         
         if(self.links[node]==[]):
             return path
@@ -61,32 +62,27 @@ class Wikipedia:
                 continue
             parents[child]=node
             visited.add(child)
-            child_path=self.dfs_shiritori(child,[],set(),parents)
+            child_path=self.dfs_shiritori(child,visited, parents)
             if len(child_path)>len(max_path):
                 max_path=child_path
-        path.extend(max_path)
+        path+=max_path
 
         return path
     
     #　find longer shiritori paths
-    def find_longer_shiritori_paths(self, max_iters=100):
+    def find_longer_shiritori_paths(self, max_iters=10000):
         max_path = []
-        max_length = 12
         
         for i in range(max_iters):
             start = time.time()
             node = random.choice(list(self.titles.keys()))
-            try:
-                path = self.dfs_shiritori(node, [], set(), {})
-            except RecursionError:
-                return self.find_longer_shiritori_paths(max_iters)
+            
+            path = self.dfs_shiritori(node, set(), {})
             
             if len(path) > len(max_path):
                 max_path = path
             end = time.time()
             
-            if(len(max_path)>max_length):
-                break
             print(max_path, end - start)
         return max_path
     

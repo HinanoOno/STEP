@@ -123,9 +123,6 @@ class Wikipedia:
         
         
         
-        
-        
-    
     # Calculate the page ranks and print the most popular pages.
     def find_most_popular_pages(self):
         max_iter = 100
